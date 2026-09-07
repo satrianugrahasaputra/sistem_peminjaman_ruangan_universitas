@@ -1,6 +1,5 @@
-Nama Peserta : [Tinggalkan Kosong Untuk Saya Isi Nanti]  
-No Meja: [Tinggalkan Kosong Untuk Saya Isi Nanti]  
-Link Repo Git: [Tinggalkan Kosong Untuk Saya Isi Nanti]  
+
+Link Repo Git: https://github.com/satrianugrahasaputra/sistem_peminjaman_ruangan_universitas.git 
 Credential (Bila Perlu): 
 - Admin (Sarpras) : admin@kampus.ac.id / Admin123!
 - Admin (Fasilitas): admin.sarpras@kampus.ac.id / Admin123!
