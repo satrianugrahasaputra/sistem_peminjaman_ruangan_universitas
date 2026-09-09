@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,6 +14,8 @@ import {
   X,
   ShieldCheck,
   User,
+  ChevronDown,
+  UserCog,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -24,7 +26,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -35,6 +39,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         }
       })
       .catch(() => {});
+  }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
@@ -66,14 +81,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: "/admin/riwayat",
       icon: History,
     },
+    {
+      name: "Profil Saya",
+      href: "/admin/profil",
+      icon: UserCog,
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar for Desktop */}
-      <aside className="hidden lg:flex lg:flex-col w-72 bg-slate-900 text-slate-300 border-r border-slate-800 flex-shrink-0">
+    <div className="h-screen w-screen overflow-hidden bg-slate-50 flex">
+      {/* Sidebar for Desktop - Fixed 100% Height, Never Scrolls with Main Content */}
+      <aside className="hidden lg:flex lg:flex-col w-72 h-screen bg-slate-900 text-slate-300 border-r border-slate-800 flex-shrink-0 select-none">
         {/* Logo Branding */}
-        <div className="p-6 border-b border-slate-800/80 flex items-center gap-3.5">
+        <div className="p-6 border-b border-slate-800/80 flex items-center gap-3.5 flex-shrink-0">
           <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
             <Building2 className="w-5 h-5" />
           </div>
@@ -87,7 +107,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </div>
 
-        {/* Navigation links */}
+        {/* Navigation links - Scrollable only within sidebar if needed */}
         <nav className="p-4 flex-1 space-y-1.5 overflow-y-auto">
           <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Menu Utama
@@ -101,7 +121,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 href={item.href}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
                   isActive
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-semibold"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                 }`}
               >
@@ -112,21 +132,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           })}
         </nav>
 
-        {/* User Card & Logout */}
-        <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
-          <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="w-9 h-9 rounded-full bg-indigo-950 border border-indigo-500/40 flex items-center justify-center text-indigo-300">
+        {/* User Card & Logout - Pinned to bottom of Sidebar */}
+        <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 flex-shrink-0">
+          <Link
+            href="/admin/profil"
+            className="flex items-center gap-3 mb-3 p-2 rounded-xl hover:bg-slate-800/60 transition group cursor-pointer"
+            title="Klik untuk ubah profil"
+          >
+            <div className="w-9 h-9 rounded-full bg-indigo-950 border border-indigo-500/40 flex items-center justify-center text-indigo-300 group-hover:border-indigo-400 transition">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">
+              <p className="text-xs font-semibold text-white truncate group-hover:text-indigo-300 transition">
                 {currentUser?.name || "Administrator"}
               </p>
               <p className="text-[11px] text-slate-400 truncate">
                 {currentUser?.email || "admin@kampus.ac.id"}
               </p>
             </div>
-          </div>
+          </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 hover:border-rose-900/50 border border-slate-700/60 rounded-xl text-xs font-medium transition"
@@ -137,10 +161,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navbar */}
-        <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+      {/* Main Container - Has its own independent scroll container */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* Top Navbar - Fixed at the top */}
+        <header className="h-16 flex-shrink-0 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -160,29 +184,74 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <div className="text-xs font-semibold text-slate-800">
-                {currentUser?.name || "Admin"}
+          {/* Profile Dropdown Component */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              id="btn-admin-profile-dropdown"
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="flex items-center gap-3 p-1.5 sm:px-3 sm:py-2 rounded-2xl hover:bg-slate-100 transition border border-transparent hover:border-slate-200"
+            >
+              <div className="text-right hidden sm:block">
+                <div className="text-xs font-bold text-slate-800 leading-tight">
+                  {currentUser?.name || "Administrator"}
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {currentUser?.email || "admin@kampus.ac.id"}
+                </div>
               </div>
-              <div className="text-[11px] text-slate-500">
-                {new Date().toLocaleDateString("id-ID", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+
+              <div className="w-9 h-9 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-xs shadow-xs">
+                <User className="w-4 h-4" />
               </div>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
-              <User className="w-4 h-4" />
-            </div>
+
+              <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-fade-in">
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <p className="text-xs font-bold text-slate-900 truncate">
+                    {currentUser?.name || "Administrator"}
+                  </p>
+                  <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                    {currentUser?.email}
+                  </p>
+                  <span className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    <ShieldCheck className="w-3 h-3" />
+                    Administrator Sarpras
+                  </span>
+                </div>
+
+                <div className="p-1.5 space-y-1">
+                  <Link
+                    href="/admin/profil"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition"
+                  >
+                    <UserCog className="w-4 h-4 text-indigo-600" />
+                    <span>Profil Saya (Edit Profil)</span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+                  >
+                    <LogOut className="w-4 h-4 text-rose-500" />
+                    <span>Keluar Akun</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* Mobile menu dropdown */}
+        {/* Mobile menu drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-slate-900 border-b border-slate-800 p-4 space-y-1">
+          <div className="lg:hidden bg-slate-900 border-b border-slate-800 p-4 space-y-1 flex-shrink-0">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -193,7 +262,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium ${
                     isActive
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-indigo-600 text-white font-semibold"
                       : "text-slate-300 hover:bg-slate-800"
                   }`}
                 >
@@ -212,8 +281,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         )}
 
-        {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
+        {/* Page Content - ONLY this area scrolls */}
+        <main className="flex-1 p-4 sm:p-8 overflow-y-auto bg-slate-50">
           {children}
         </main>
       </div>
