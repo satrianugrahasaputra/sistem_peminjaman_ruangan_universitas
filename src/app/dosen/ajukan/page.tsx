@@ -16,15 +16,8 @@ import {
   MapPin,
   ArrowRight,
   ShieldAlert,
-  Sparkles,
   Search,
   Check,
-  ChevronRight,
-  Tv,
-  Wind,
-  Volume2,
-  Cpu,
-  Layers,
   X,
 } from "lucide-react";
 
@@ -78,6 +71,9 @@ function DosenAjukanForm() {
   }>({ checked: false, hasConflict: false });
   const [checkingConflict, setCheckingConflict] = useState(false);
 
+  // Formatted date string to prevent any hydration mismatch
+  const [formattedDateText, setFormattedDateText] = useState<string>("");
+
   // Submission State
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
@@ -112,6 +108,37 @@ function DosenAjukanForm() {
     d.setDate(d.getDate() + daysFromToday);
     setBookingDate(d.toISOString().slice(0, 10));
   };
+
+  // Safe formatted date calculation
+  useEffect(() => {
+    if (!bookingDate) {
+      setFormattedDateText("");
+      return;
+    }
+    try {
+      const parts = bookingDate.split("-");
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) {
+          setFormattedDateText(
+            d.toLocaleDateString("id-ID", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          );
+          return;
+        }
+      }
+      setFormattedDateText(bookingDate);
+    } catch {
+      setFormattedDateText("");
+    }
+  }, [bookingDate]);
 
   // Calculate Duration
   const calculateDuration = () => {
@@ -225,10 +252,10 @@ function DosenAjukanForm() {
   const modalFilteredRooms = rooms.filter((r) => {
     const q = roomSearchQuery.toLowerCase();
     return (
-      r.name.toLowerCase().includes(q) ||
-      r.code.toLowerCase().includes(q) ||
-      r.location.toLowerCase().includes(q) ||
-      r.facilities.toLowerCase().includes(q)
+      (r.name || "").toLowerCase().includes(q) ||
+      (r.code || "").toLowerCase().includes(q) ||
+      (r.location || "").toLowerCase().includes(q) ||
+      (r.facilities || "").toLowerCase().includes(q)
     );
   });
 
@@ -250,7 +277,7 @@ function DosenAjukanForm() {
 
       {/* Success Alert */}
       {successMessage && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-3 shadow-sm animate-fade-in">
+        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-3 shadow-sm">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
           <span className="font-bold">{successMessage}</span>
         </div>
@@ -331,14 +358,14 @@ function DosenAjukanForm() {
 
                   {/* Facilities list tags */}
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {selectedRoom.facilities
+                    {(selectedRoom.facilities || "")
                       .split(",")
                       .map((f) => f.trim())
                       .filter(Boolean)
                       .map((fac, idx) => (
                         <span
                           key={idx}
-                          className="px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700 shadow-2xs"
+                          className="px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700 shadow-sm"
                         >
                           {fac}
                         </span>
@@ -438,22 +465,17 @@ function DosenAjukanForm() {
                 value={bookingDate}
                 min={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setBookingDate(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition shadow-2xs"
+                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition shadow-sm"
               />
 
               {/* Formatted Date Display Badge */}
-              {bookingDate && (
-                <div className="mt-3 p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700">
+              {formattedDateText && (
+                <div className="mt-3 p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 shadow-xs">
                   <span className="text-[10px] text-slate-400 block font-semibold uppercase">
                     Hari & Tanggal Terpilih:
                   </span>
                   <span className="font-extrabold text-slate-900 text-sm mt-0.5 block">
-                    {new Date(bookingDate + "T00:00:00").toLocaleDateString("id-ID", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                    {formattedDateText}
                   </span>
                 </div>
               )}
@@ -463,7 +485,7 @@ function DosenAjukanForm() {
             <div className="lg:col-span-7 space-y-4">
               {/* Sesi Perkuliahan Cepat */}
               <div>
-                <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2 flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-emerald-600" />
                     Pilihan Sesi Perkuliahan:
@@ -542,7 +564,7 @@ function DosenAjukanForm() {
             </div>
           </div>
 
-          {/* Real-time Conflict Detector Banner (Sangat Jelas & Estetik) */}
+          {/* Real-time Conflict Detector Banner */}
           <div className="mt-5">
             {checkingConflict ? (
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-3">
