@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import AdminLayout from "@/components/AdminLayout";
 import StatusBadge from "@/components/StatusBadge";
 import {
@@ -12,6 +13,7 @@ import {
   User,
   DoorOpen,
   Archive,
+  Printer,
 } from "lucide-react";
 
 export default function AdminRiwayatPage() {
@@ -147,18 +149,19 @@ export default function AdminRiwayatPage() {
                 <th className="py-3.5 px-4">Keperluan</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4">Catatan / Alasan</th>
+                <th className="py-3.5 px-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                  <td colSpan={8} className="py-8 text-center text-slate-400">
                     Memuat riwayat arsip peminjaman...
                   </td>
                 </tr>
               ) : bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                  <td colSpan={8} className="py-8 text-center text-slate-400">
                     Belum ada data riwayat peminjaman.
                   </td>
                 </tr>
@@ -220,6 +223,19 @@ export default function AdminRiwayatPage() {
                       </td>
                       <td className="py-3.5 px-4 text-xs text-slate-500 max-w-xs truncate" title={b.adminNotes || "-"}>
                         {b.adminNotes || "-"}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        {(b.status === "DISETUJUI" || b.status === "SELESAI") && (
+                          <Link
+                            href={`/cetak-surat/${b.id}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition"
+                            title="Cetak Surat Izin / Lembar Rekomendasi (PDF)"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Surat</span>
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   );

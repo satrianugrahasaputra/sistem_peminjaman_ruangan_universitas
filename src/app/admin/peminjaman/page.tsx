@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import AdminLayout from "@/components/AdminLayout";
 import StatusBadge from "@/components/StatusBadge";
 import {
@@ -17,6 +18,7 @@ import {
   Info,
   MapPin,
   X,
+  Printer,
 } from "lucide-react";
 
 interface BookingItem {
@@ -291,6 +293,18 @@ export default function AdminPeminjamanPage() {
                             >
                               Tandai Selesai
                             </button>
+                          )}
+
+                          {(b.status === "DISETUJUI" || b.status === "SELESAI") && (
+                            <Link
+                              href={`/cetak-surat/${b.id}`}
+                              target="_blank"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-semibold transition"
+                              title="Cetak Surat Izin / Lembar Rekomendasi (PDF)"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                              <span>Surat</span>
+                            </Link>
                           )}
 
                           <button

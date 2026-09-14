@@ -16,6 +16,7 @@ import {
   XCircle,
   AlertTriangle,
   X,
+  Printer,
 } from "lucide-react";
 
 interface BookingItem {
@@ -237,6 +238,18 @@ export default function DosenRiwayatPage() {
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="inline-flex items-center gap-1.5">
+                          {(b.status === "DISETUJUI" || b.status === "SELESAI") && (
+                            <Link
+                              href={`/cetak-surat/${b.id}`}
+                              target="_blank"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition"
+                              title="Cetak Surat Izin Penggunaan Ruangan (PDF)"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                              <span>Cetak Surat</span>
+                            </Link>
+                          )}
+
                           <button
                             onClick={() => setSelectedBooking(b)}
                             className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition"
@@ -318,7 +331,19 @@ export default function DosenRiwayatPage() {
               )}
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              {(selectedBooking.status === "DISETUJUI" || selectedBooking.status === "SELESAI") ? (
+                <Link
+                  href={`/cetak-surat/${selectedBooking.id}`}
+                  target="_blank"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/30 transition"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Surat Izin (PDF)</span>
+                </Link>
+              ) : (
+                <div />
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedBooking(null)}
