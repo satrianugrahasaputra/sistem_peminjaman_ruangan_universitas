@@ -1,161 +1,173 @@
-Credential: 
-- Admin (Sarpras) : admin@kampus.ac.id / Admin123!
-- Admin (Fasilitas): admin.sarpras@kampus.ac.id / Admin123!
-- Dosen 1         : budi.santoso@kampus.ac.id / Dosen123!
-- Dosen 2         : siti.aminah@kampus.ac.id / Dosen123!
-- Dosen 3         : eko.prasetyo@kampus.ac.id / Dosen123!
-- Dosen 4         : dewi.lestari@kampus.ac.id / Dosen123!
-- Dosen 5         : ahmad.dahlan@kampus.ac.id / Dosen123!
-
----
+<div align="center">
 
 # 🏛️ Sistem Peminjaman Ruang Universitas
+### Enterprise Campus Facilities & Room Reservation Management Platform
 
-Aplikasi web full-stack terpadu untuk manajemen dan reservasi ruangan perkuliahan, laboratorium, dan aula di lingkungan perguruan tinggi. Dirancang dari awal hingga siap produksi (*production-ready*) dengan arsitektur modern, proteksi role berbasis middleware, validasi bentrok jadwal otomatis, sinkronisasi WebService eksternal, dan automated testing komprehensif.
+[![CI Tests](https://github.com/satrianugrahasaputra/sistem_peminjaman_ruangan_universitas/actions/workflows/ci.yml/badge.svg)](https://github.com/satrianugrahasaputra/sistem_peminjaman_ruangan_universitas/actions)
+![Next.js](https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma)
+![Vitest](https://img.shields.io/badge/Vitest-Automated_Tests-729B1B?style=flat-square&logo=vitest)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
----
+<p align="center">
+  Platform web full-stack terintegrasi untuk reservasi dan manajemen sarana prasarana perguruan tinggi (ruang kuliah, laboratorium komputer, aula, dan ruang seminar) berbasis pencegahan bentrok jadwal otomatis, persetujuan bertingkat, verifikasi surat izin QR Code, visualisasi analitik interaktif, serta notifikasi in-app terpadu.
+</p>
 
-## 🛠️ 1. Tech Stack yang Digunakan
-
-- **Framework Utama**: Next.js 14+ (App Router) dengan TypeScript
-- **Styling**: Tailwind CSS & Lucide React (UI responsif, modern, intuitif, clean)
-- **Database & ORM**: SQLite via Prisma ORM (*zero-config*, portabel, langsung siap pakai)
-- **Autentikasi & Otorisasi**: Custom JWT Session Cookies (HttpOnly) & Middleware Next.js
-- **Testing Engine**: Vitest (Unit & Integration Automated Testing)
-- **External WebService**: Integrasi sinkronisasi data ruangan dari `https://api-ruangan.vercel.app/rooms`
-
----
-
-## ⚙️ 2. Fitur-Fitur Wajib & Implementasi
-
-| Fitur | Status | Deskripsi Implementasi |
-|---|:---:|---|
-| **Authentication & Authorization** | ✅ Selesai | Login terpisah antara role Admin dan Dosen diproteksi melalui Next.js `middleware.ts`. Route `/admin/*` hanya untuk Admin, route `/dosen/*` hanya untuk Dosen. Dilengkapi tombol *Quick-Fill* kredensial untuk demo pengujian. |
-| **Database Migration & Seeder** | ✅ Selesai | Seeder (`prisma/seed.ts`) memuat **10 akun pengguna** (2 Admin, 8 Dosen) dan **10 data ruangan** dengan spesifikasi fasilitas lengkap, serta data awal peminjaman. |
-| **Manajemen Data Ruang (CRUD)** | ✅ Selesai | CRUD lengkap pada panel Admin (`/admin/ruangan`). Admin dapat menambah ruangan baru, mengedit kapasitas/fasilitas, serta menonaktifkan/menghapus ruangan. |
-| **Sinkronisasi API Eksternal** | ✅ Selesai | Tombol khusus **"🔄 Sinkronisasi WebService"** pada panel Admin dan Dashboard yang menarik data dari `https://api-ruangan.vercel.app/rooms`. Dilengkapi penanganan *fault-tolerant fallback* bila endpoint publik Vercel mengalami 404/downtime. |
-| **Manajemen Peminjaman** | ✅ Selesai | Dosen dapat memilih ruangan, menentukan tanggal & jam, serta mencantumkan keperluan kegiatan melalui formulir pengajuan (`/dosen/ajukan`). |
-| **Approval System** | ✅ Selesai | Admin memiliki antarmuka khusus (`/admin/peminjaman`) untuk menyetujui (**Approve**), menolak (**Reject** dengan catatan alasan), atau menandai peminjaman selesai (**Finish**). |
-| **Pencegahan Bentrok Jadwal** | ✅ Selesai | Sistem memvalidasi formula bentrok $(\text{Start}_A < \text{End}_B \land \text{End}_A > \text{Start}_B)$ secara **real-time** pada form Dosen dan saat proses *approval* oleh Admin. Ruangan yang sudah disetujui tidak dapat dipinjam kembali pada jam beririsan. |
-| **Dashboard Statistik** | ✅ Selesai | Ringkasan metrik statistik real-time: Total Ruangan, Pengajuan Menunggu Review, Disetujui, Ditolak, dan Selesai, serta tabel pantauan aktivitas terbaru. |
-| **Pencarian & Filter** | ✅ Selesai | Fitur filter status tab, filter lokasi gedung, filter kapasitas, dan pencarian instan (kode ruangan, nama dosen, peruntukan). |
-| **Automated Testing** | ✅ Selesai | Terdapat **8 Automated Test (Unit & Integration)** menggunakan Vitest yang mencakup seluruh aturan bisnis, validasi bentrok, role access, status cycle, dan soft-delete. |
+</div>
 
 ---
 
-## 📋 3. Aturan Bisnis (Core Logic Rules)
+## 📸 Media Visual & Tangkapan Layar Aplikasi
 
-1. **Aturan Role Pengajuan**: Hanya user dengan role **DOSEN** yang diizinkan mengajukan peminjaman ruangan.
-2. **Aturan Role Approval**: Hanya user dengan role **ADMIN** yang memiliki otoritas untuk menyetujui (*Approve*) atau menolak (*Reject*) permohonan peminjaman.
-3. **Pencegahan Ruangan Bentrok**: Ruangan dengan status `DISETUJUI` tidak dapat dipinjam oleh siapa pun pada rentang waktu yang sama atau beririsan.
-4. **Siklus 4 Tahap Status**:
-   $$\text{MENUNGGU} \longrightarrow \begin{cases} \text{DISETUJUI} \longrightarrow \text{SELESAI} \\ \text{DITOLAK} \end{cases}$$
-5. **Retensi Riwayat Permanen**: Data riwayat peminjaman tidak pernah dihapus permanen (*soft-delete* dengan `isDeleted = true` dan `deletedAt`), sehingga seluruh jejak audit dan laporan historis tetap tersimpan utuh.
+Berikut adalah dokumentasi antarmuka pengguna (*User Interface*) utama yang dirancang dengan estetika modern, responsif, dan standar *human-centered design*:
+
+### 1. 📊 Dashboard Admin & Visualisasi Analitik Interaktif
+> Dilengkapi metrik KPI real-time, grafik tren peminjaman bulanan (*Area Chart*), diagram proporsi status (*Donut Chart*), peringkat ruangan terpopuler, dan lonceng notifikasi real-time.
+
+![Dashboard Admin & Analitik](docs/screenshots/dashboard-analytics.png)
 
 ---
 
-## 🧪 4. Hasil Pengujian Otomatis (Automated Testing)
+### 2. 🏢 Modal Pemilihan Ruangan Visual & Interaktif
+> Pengalaman pemesanan ruangan yang intuitif dengan katalog berfoto, badge kapasitas, filter gedung, dan deteksi ketersediaan instan.
 
-Automated tests dijalankan menggunakan **Vitest** pada file `src/__tests__/booking-system.test.ts`.
+![Modal Pilih Ruangan Estetik](docs/screenshots/modal-pilih-ruangan.png)
 
-### Ringkasan Test Cases:
-- **Test 1**: Pencegahan Bentrok - deteksi tumpang tindih waktu dengan presisi (*pure logic overlap*).
-- **Test 2**: Pencegahan Bentrok - tolak peminjaman jika ruangan dan waktu bentrok dengan jadwal `DISETUJUI` di database.
-- **Test 3**: Izinkan peminjaman jika waktu tidak beririsan atau ruangan berbeda.
-- **Test 4**: Aturan Role - hanya role `DOSEN` yang diizinkan mengajukan peminjaman.
-- **Test 5**: Aturan Role - hanya role `ADMIN` yang diizinkan approve atau reject pengajuan.
-- **Test 6**: Siklus Status Pengajuan - 4 Tahap (`MENUNGGU`, `DISETUJUI`, `DITOLAK`, `SELESAI`).
-- **Test 7**: Retensi Riwayat - peminjaman tidak boleh terhapus permanen dari database (*soft-delete*).
-- **Test 8**: Sinkronisasi Ruangan - berhasil melakukan upsert data ruangan dari WebService / Fallback.
+---
 
-**Hasil Eksekusi:**
+### 3. 📅 Riwayat & Pemantauan Jadwal Peminjaman
+> Tabel pantauan komprehensif dengan status siklus 4 tahap (*Menunggu*, *Disetujui*, *Ditolak*, *Selesai*), filter status multi-kategori, pencarian cepat, dan akses cetak surat izin resmi ber-QR Code.
+
+![Riwayat dan Kalender Peminjaman](docs/screenshots/kalender-jadwal.png)
+
+---
+
+### 4. 👤 Halaman Profil Pengguna & Keamanan Akun
+> Fitur personalisasi data dosen/admin, pembaharuan NIDN dan nomor telepon, ubah kata sandi dengan enkripsi bcrypt aman, serta navigasi pintas.
+
+![Halaman Profil Pengguna](docs/screenshots/profil-pengguna.png)
+
+---
+
+## 🌟 Fitur-Fitur Utama Sistem
+
+| Fitur Unggulan | Deskripsi Implementasi & Keunggulan |
+|---|---|
+| **🔔 In-App Notification (Lonceng Notifikasi)** | Ikon lonceng interaktif di navbar dengan indikator unread badge dan popover dropdown real-time. Dosen menerima update persetujuan/penolakan instan, dan Admin menerima notifikasi pengajuan baru yang siap ditinjau. Dilengkapi fitur *Mark all as read*. |
+| **🛡️ Deteksi & Pencegahan Bentrok Jadwal (Zero-Conflict)** | Formula matematis ketat $(\text{Start}_A < \text{End}_B \land \text{End}_A > \text{Start}_B)$ berjalan secara real-time pada formulir pengajuan dan saat proses persetujuan oleh Admin. Menjamin tidak ada dua jadwal kuliah yang tumpang tindih. |
+| **📄 Cetak Surat Izin Resmi (PDF & QR Code)** | Penerbitan lembar rekomendasi/surat izin peminjaman resmi standar universitas lengkap dengan kop surat institusi, rincian jadwal, stempel digital, dan verifikasi QR Code terenkripsi. |
+| **📈 Dashboard Statistik & Visualisasi Analitik** | Visualisasi tren peminjaman bulanan dengan tooltip interaktif, status breakdown chart, dan perankingan ruangan paling sering digunakan untuk pengambilan keputusan pihak Sarpras. |
+| **🔄 Sinkronisasi API Eksternal (Fault-Tolerant)** | Sinkronisasi data katalog ruangan terpadu dari WebService eksternal (`/api/rooms/sync`) dengan mekanisme *graceful fallback* saat endpoint eksternal mengalami kendala. |
+| **🔐 Role-Based Access Control (RBAC)** | Proteksi route berlapis melalui Next.js `middleware.ts`. Portal Admin (`/admin/*`) dan Portal Dosen (`/dosen/*`) terisolasi penuh dengan session cookie berbasis JSON Web Token (JWT) yang aman. |
+| **🗃️ Audit Trail & Retensi Data Permanen** | Pembatalan peminjaman menerapkan mekanisme *soft-delete* (`isDeleted = true` dan `deletedAt`) sehingga riwayat audit historis tetap terjaga untuk akreditasi kampus. |
+
+---
+
+## 🛠️ Arsitektur & Teknologi
+
+- **Frontend & App Router**: Next.js 14+ (React Server & Client Components)
+- **Language**: TypeScript (Type-Safe End-to-End)
+- **Styling**: Tailwind CSS & Lucide React Icons
+- **Database & ORM**: SQLite (Prisma ORM) — portabel, *zero-configuration*, dan siap migrasi ke PostgreSQL/Supabase
+- **Security & Hashing**: bcryptjs, Jose (JWT), Next.js Middleware HttpOnly Cookies
+- **Automated Testing**: Vitest (Unit & Integration Business Logic Tests)
+- **CI/CD Pipeline**: GitHub Actions (`.github/workflows/ci.yml`)
+
+---
+
+## 🧪 Pengujian Otomatis (Automated Testing CI/CD)
+
+Proyek ini dilengkapi **23 automated test cases** yang menguji seluruh lapisan logika bisnis, integritas data, dan aturan validasi tanpa cacat:
+
 ```bash
- ✓ src/__tests__/booking-system.test.ts (8 tests)
- Test Files  1 passed (1)
-      Tests  8 passed (8) - 100% PASS
+npm run test
 ```
 
----
+### Hasil Eksekusi Test Suite (100% PASS):
+```bash
+ ✓ src/__tests__/notifications.test.ts   (5 tests)
+ ✓ src/__tests__/analytics.test.ts       (3 tests)
+ ✓ src/__tests__/surat-izin.test.ts      (3 tests)
+ ✓ src/__tests__/booking-system.test.ts  (8 tests)
+ ✓ src/__tests__/profile.test.ts         (4 tests)
 
-## 🚀 5. Cara Menjalankan Proyek
+ Test Files  5 passed (5)
+      Tests  23 passed (23) - 100% SUCCESS
+```
 
-### Prasyarat
-- Node.js versi 18+ (direkomendasikan Node 20 / 22)
-- npm versi 9+
-
-### Langkah-Langkah:
-
-1. **Clone / Buka Direktori Proyek**:
-   ```bash
-   cd "Sistem Peminjaman Ruang Universitas"
-   ```
-
-2. **Instal Dependensi**:
-   ```bash
-   npm install
-   ```
-
-3. **Inisialisasi Database & Seeder**:
-   ```bash
-   # Push skema Prisma ke database SQLite (dev.db)
-   npx prisma db push
-
-   # Eksekusi seeder (10 user, 10 ruangan, dan sampel peminjaman)
-   npm run db:seed
-   ```
-
-4. **Menjalankan Automated Tests**:
-   ```bash
-   npm run test
-   ```
-
-5. **Menjalankan Server Aplikasi**:
-   - **Mode Produksi (Optimized)**:
-     ```bash
-     npm run build
-     npm run start
-     ```
-   - **Mode Development**:
-     ```bash
-     npm run dev
-     ```
-
-6. **Akses Aplikasi Melalui Browser**:
-   Buka alamat: [http://localhost:3000](http://localhost:3000)
+Setiap kali kode di-push ke repository GitHub, workflow `.github/workflows/ci.yml` akan secara otomatis menguji build dan seluruh unit tests untuk menjamin keandalan sistem (*reliability*).
 
 ---
 
-## 🔑 6. Kredensial Akun Pengujian (Seeder)
+## 🚀 Panduan Menjalankan Proyek (Quick Start)
 
-### Akun Administrator (Sarpras):
-- **Email**: `admin@kampus.ac.id`
-- **Password**: `Admin123!`
-- **Role**: `ADMIN`
-- **Hak Akses**: Dashboard Admin, Manajemen Ruang (CRUD & Sinkronisasi API), Persetujuan Pengajuan (Approve/Reject), Riwayat Lengkap & Ekspor CSV.
+### 1. Prasyarat Sistem
+- **Node.js**: Versi 18.x atau 20.x+ (disarankan Node 20 LTS)
+- **NPM**: Versi 9.x atau 10.x+
 
-### Akun Dosen Pengajar:
-- **Email**: `budi.santoso@kampus.ac.id` (Dr. Budi Santoso, M.Kom.)
-- **Password**: `Dosen123!`
-- **Role**: `DOSEN`
-- **Hak Akses**: Dashboard Dosen, Katalog Ruangan, Pengajuan Peminjaman (dengan deteksi bentrok real-time), Riwayat Pengajuan Pribadi.
+### 2. Langkah Instalasi & Menjalankan
 
-*(Tersedia tombol pintas **"Quick Fill"** pada halaman Login untuk kemudahan demo tanpa perlu mengetik manual).*
+```bash
+# 1. Masuk ke direktori proyek
+cd "Sistem Peminjaman Ruang Universitas"
+
+# 2. Instal seluruh dependensi
+npm install
+
+# 3. Sinkronisasikan skema Prisma ke database SQLite
+npx prisma db push
+
+# 4. Jalankan seeder database (10 Akun User & 10 Ruangan Fasilitas)
+npm run db:seed
+
+# 5. Jalankan automated test suite
+npm run test
+
+# 6. Jalankan local development server
+npm run dev
+```
+
+Buka peramban di [http://localhost:3000](http://localhost:3000) untuk mengakses aplikasi.
 
 ---
 
-## 📡 7. Dokumentasi API Endpoints
+## 🔑 Kredensial Akun Pengujian (Demo)
 
-- `POST /api/auth/login` : Autentikasi kredensial dan penerbitan session cookie
-- `POST /api/auth/logout` : Menghapus session cookie
-- `GET /api/auth/me` : Membaca profil user yang sedang aktif
-- `GET /api/dashboard/stats` : Mengambil data ringkasan statistik (role-aware)
-- `GET /api/rooms` : Daftar ruangan dengan filter pencarian dan kapasitas
-- `POST /api/rooms` : Menambah data ruangan baru (*Admin only*)
-- `PUT /api/rooms/[id]` : Memperbarui data ruangan (*Admin only*)
-- `DELETE /api/rooms/[id]` : Menghapus/menonaktifkan ruangan (*Admin only*)
-- `POST /api/rooms/sync` : Menjalankan sinkronisasi ruangan dari WebService eksternal (*Admin only*)
-- `POST /api/bookings/check-conflict` : Memeriksa bentrok jadwal ruangan secara real-time
-- `GET /api/bookings` : Daftar peminjaman dengan filter status dan pencarian
-- `POST /api/bookings` : Mengajukan peminjaman ruangan baru (*Dosen only*)
-- `PATCH /api/bookings/[id]` : Menyetujui, menolak, atau menyelesaikan peminjaman (*Admin only*)
-- `DELETE /api/bookings/[id]` : Membatalkan peminjaman (*Soft-delete*)
+Tersedia tombol **"Quick Fill"** pada halaman Login untuk kemudahan demo pengujian instan:
+
+| Role | Akun Email | Password | Hak Akses Utama |
+|---|---|---|---|
+| **Admin Sarpras** | `admin@kampus.ac.id` | `Admin123!` | Dashboard Analitik, Manajemen Ruang, Approval/Reject, Laporan CSV, Notifikasi Masuk. |
+| **Admin Fasilitas** | `admin.sarpras@kampus.ac.id` | `Admin123!` | Verifikasi peminjaman, sinkronisasi ruangan, dan manajemen jadwal kampus. |
+| **Dosen (Dr. Budi)** | `budi.santoso@kampus.ac.id` | `Dosen123!` | Formulir reservasi interaktif, cek bentrok real-time, riwayat, dan unduh lembar cetak PDF. |
+| **Dosen (Dr. Siti)** | `siti.aminah@kampus.ac.id` | `Dosen123!` | Pengajuan peminjaman laboratorium komputer dan aula seminar. |
+
+---
+
+## 📡 Dokumentasi Endpoint API
+
+| Metode | Endpoint | Deskripsi | Otorisasi |
+|---|---|---|---|
+| `POST` | `/api/auth/login` | Autentikasi user & penerbitan session cookie | Publik |
+| `POST`/`GET` | `/api/auth/logout` | Menghapus session cookie & redirect | User Aktif |
+| `GET` | `/api/auth/me` | Membaca data profil user yang sedang login | User Aktif |
+| `GET` | `/api/notifications` | Mengambil feed notifikasi real-time (role-aware) | User Aktif |
+| `GET` | `/api/dashboard/stats` | Mengambil data metrik statistik & analytics grafik | User Aktif |
+| `GET` | `/api/rooms` | Daftar katalog ruangan & filter fasilitas | Publik / User |
+| `POST` | `/api/rooms` | Menambah data ruangan baru | Admin Only |
+| `PUT` | `/api/rooms/[id]` | Memperbarui data ruangan | Admin Only |
+| `DELETE`| `/api/rooms/[id]` | Menghapus data ruangan | Admin Only |
+| `POST` | `/api/rooms/sync` | Sinkronisasi katalog dari WebService eksternal | Admin Only |
+| `POST` | `/api/bookings/check-conflict` | Validasi bentrok jadwal ruangan secara real-time | Dosen / Admin |
+| `GET` | `/api/bookings` | Daftar riwayat dan pengajuan peminjaman | Dosen / Admin |
+| `POST` | `/api/bookings` | Mengajukan peminjaman ruangan baru | Dosen Only |
+| `PATCH`| `/api/bookings/[id]` | Menyetujui (*Approve*) atau Menolak (*Reject*) peminjaman | Admin Only |
+| `DELETE`| `/api/bookings/[id]` | Membatalkan peminjaman (*Soft-Delete*) | Dosen / Admin |
+
+---
+
+## 👨‍💻 Kontribusi & Pengembang
+
+Dikembangkan dengan dedikasi tinggi untuk memberikan solusi digitalisasi sarana prasarana perguruan tinggi yang efisien, transparan, dan berstandar rekayasa perangkat lunak modern.
