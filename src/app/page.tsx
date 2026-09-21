@@ -23,6 +23,8 @@ import {
   Mail,
   ChevronRight,
   RefreshCw,
+  Menu,
+  X,
 } from "lucide-react";
 
 interface RoomItem {
@@ -41,6 +43,7 @@ export default function PublicLandingPage() {
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -93,45 +96,59 @@ export default function PublicLandingPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-500 selection:text-white">
       {/* 1. PUBLIC TOPBAR NAVBAR */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          {/* Logo & Brand */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-600 group-hover:bg-indigo-700 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 transition">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-extrabold text-slate-900 tracking-tight leading-none text-base">
-                SARPRAS KAMPUS
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Column 1: Brand & Logo (anchored to left) */}
+          <div className="flex-1 flex items-center justify-start">
+            <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 group-hover:bg-indigo-700 flex items-center justify-center text-white shadow-md shadow-indigo-600/25 transition-all duration-300 group-hover:scale-105">
+                <Building2 className="w-5 h-5" />
               </div>
-              <span className="text-[11px] font-semibold text-indigo-600">
-                Universitas Terpadu
-              </span>
-            </div>
-          </Link>
+              <div className="flex flex-col">
+                <div className="font-extrabold text-slate-900 tracking-tight leading-none text-base sm:text-lg">
+                  SARPRAS KAMPUS
+                </div>
+                <span className="text-[11px] font-semibold text-indigo-600 tracking-wide mt-1">
+                  Universitas Terpadu
+                </span>
+              </div>
+            </Link>
+          </div>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <a href="#katalog" className="hover:text-indigo-600 transition">
+          {/* Column 2: Centered Modern Pill Navigation (strictly centered in the container) */}
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1.5 rounded-full border border-slate-200/70 shadow-2xs">
+            <a
+              href="#katalog"
+              className="px-4 py-2 text-xs lg:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-white rounded-full transition-all duration-200"
+            >
               Katalog Ruangan
             </a>
-            <a href="#alur" className="hover:text-indigo-600 transition">
+            <a
+              href="#alur"
+              className="px-4 py-2 text-xs lg:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-white rounded-full transition-all duration-200"
+            >
               Alur Peminjaman
             </a>
-            <a href="#keunggulan" className="hover:text-indigo-600 transition">
+            <a
+              href="#keunggulan"
+              className="px-4 py-2 text-xs lg:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-white rounded-full transition-all duration-200"
+            >
               Fitur Unggulan
             </a>
-            <a href="#kontak" className="hover:text-indigo-600 transition">
+            <a
+              href="#kontak"
+              className="px-4 py-2 text-xs lg:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-white rounded-full transition-all duration-200"
+            >
               Kontak
             </a>
           </nav>
 
-          {/* Auth CTA Action */}
-          <div className="flex items-center gap-3">
+          {/* Column 3: Action Button & Mobile Menu (anchored to right) */}
+          <div className="flex-1 flex items-center justify-end gap-3">
             {currentUser ? (
               <Link
                 href={currentUser.role === "ADMIN" ? "/admin/dashboard" : "/dosen/dashboard"}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/25 transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/25 transition-all duration-200 cursor-pointer hover:shadow-indigo-600/35 hover:-translate-y-0.5"
               >
                 <span>Buka Dashboard</span>
                 <ArrowRight className="w-4 h-4" />
@@ -139,14 +156,57 @@ export default function PublicLandingPage() {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/25 transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/25 transition-all duration-200 cursor-pointer hover:shadow-indigo-600/35 hover:-translate-y-0.5"
               >
                 <GraduationCap className="w-4 h-4" />
                 <span>Masuk ke Sistem</span>
               </Link>
             )}
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition focus:outline-hidden"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu for smaller screens */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-200/80 bg-white/95 backdrop-blur-md px-4 py-4 space-y-1.5 shadow-lg animate-fade-in">
+            <a
+              href="#katalog"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 transition"
+            >
+              Katalog Ruangan
+            </a>
+            <a
+              href="#alur"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 transition"
+            >
+              Alur Peminjaman
+            </a>
+            <a
+              href="#keunggulan"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 transition"
+            >
+              Fitur Unggulan
+            </a>
+            <a
+              href="#kontak"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 transition"
+            >
+              Kontak
+            </a>
+          </div>
+        )}
       </header>
 
       {/* 2. HERO BANNER SECTION */}
