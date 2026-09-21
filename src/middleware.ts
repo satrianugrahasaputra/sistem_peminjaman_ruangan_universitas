@@ -23,16 +23,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // If visiting root "/"
+  // If visiting root "/" - allow public access for portfolio showcase
   if (pathname === "/") {
-    if (session) {
-      if (session.role === "ADMIN") {
-        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-      } else {
-        return NextResponse.redirect(new URL("/dosen/dashboard", request.url));
-      }
-    }
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.next();
   }
 
   // If visiting /login while logged in

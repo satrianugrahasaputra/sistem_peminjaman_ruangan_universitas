@@ -16,14 +16,24 @@ import {
   Calendar,
   Search,
   AlertTriangle,
+  TrendingUp,
+  BarChart3,
+  PieChart,
+  Building,
+  Award,
+  Sparkles,
+  Layers,
+  Activity,
 } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<any>(null);
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [hoveredMonth, setHoveredMonth] = useState<any | null>(null);
 
   // Quick Action Modal states
   const [actionBooking, setActionBooking] = useState<any | null>(null);
@@ -39,6 +49,7 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data.success) {
         setStats(data.stats);
+        setAnalytics(data.analytics);
         setRecentBookings(data.recentBookings || []);
       }
     } catch (err) {
@@ -267,6 +278,373 @@ export default function AdminDashboardPage() {
             >
               Riwayat <ArrowRight className="w-3 h-3" />
             </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics & Visualization Section */}
+      <div className="space-y-6 mb-8">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-5 sm:p-6 rounded-2xl shadow-sm">
+          <div>
+            <div className="flex items-center gap-2 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1">
+              <Sparkles className="w-4 h-4 text-indigo-400" />
+              <span>Insight & Kinerja Sistem</span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+              Analisis Pemanfaatan Sarana & Prasarana
+            </h2>
+            <p className="text-xs text-slate-300 mt-0.5 max-w-xl">
+              Visualisasi tren volume pengajuan, proporsi persetujuan ruangan, dan utilitas fasilitas kampus secara terintegrasi.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 text-center">
+              <span className="text-[10px] text-slate-300 uppercase block font-semibold">Tingkat Persetujuan</span>
+              <span className="text-base font-bold text-emerald-400">
+                {loading ? "..." : `${analytics?.kpi?.approvalRate ?? 95}%`}
+              </span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 text-center">
+              <span className="text-[10px] text-slate-300 uppercase block font-semibold">Jam Terjadwal</span>
+              <span className="text-base font-bold text-indigo-300">
+                {loading ? "..." : `${analytics?.kpi?.totalDurationHours ?? 0} Jam`}
+              </span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 text-center">
+              <span className="text-[10px] text-slate-300 uppercase block font-semibold">Ruangan Aktif</span>
+              <span className="text-base font-bold text-amber-300">
+                {loading ? "..." : `${analytics?.kpi?.roomUtilizationRate ?? 80}%`}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts 2-Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Chart 1: Monthly Trends Area Curve (7 Cols) */}
+          <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-indigo-600" />
+                  Tren Pengajuan Ruang Bulanan
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Volume pengajuan dan persetujuan ruangan 6 bulan terakhir.
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" /> Total
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Disetujui
+                </span>
+              </div>
+            </div>
+
+            {/* SVG Area Chart */}
+            <div className="relative w-full h-52 flex flex-col justify-end">
+              {loading ? (
+                <div className="h-full flex items-center justify-center text-slate-400 text-xs">
+                  Memuat grafik tren...
+                </div>
+              ) : (
+                (() => {
+                  const months = analytics?.monthlyTrends || [];
+                  const maxVal = Math.max(...months.map((m: any) => m.total), 10);
+                  const w = 500;
+                  const h = 160;
+                  const padX = 35;
+                  const padY = 20;
+
+                  // Coordinates
+                  const points = months.map((m: any, i: number) => {
+                    const x = padX + i * ((w - 2 * padX) / Math.max(1, months.length - 1));
+                    const y = h - padY - (m.total / maxVal) * (h - 2 * padY);
+                    return { ...m, x, y };
+                  });
+
+                  // Approved points
+                  const appPoints = months.map((m: any, i: number) => {
+                    const x = padX + i * ((w - 2 * padX) / Math.max(1, months.length - 1));
+                    const y = h - padY - (m.approved / maxVal) * (h - 2 * padY);
+                    return { x, y };
+                  });
+
+                  const linePath = points.length > 0
+                    ? points.reduce((acc: string, p: any, idx: number) => `${acc} ${idx === 0 ? "M" : "L"} ${p.x} ${p.y}`, "")
+                    : "";
+
+                  const areaPath = points.length > 0
+                    ? `${linePath} L ${points[points.length - 1].x} ${h - padY} L ${points[0].x} ${h - padY} Z`
+                    : "";
+
+                  const appLinePath = appPoints.length > 0
+                    ? appPoints.reduce((acc: string, p: any, idx: number) => `${acc} ${idx === 0 ? "M" : "L"} ${p.x} ${p.y}`, "")
+                    : "";
+
+                  return (
+                    <div className="w-full h-full relative">
+                      <svg
+                        viewBox={`0 0 ${w} ${h}`}
+                        className="w-full h-full overflow-visible"
+                        preserveAspectRatio="none"
+                      >
+                        <defs>
+                          <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.28" />
+                            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Horizontal Gridlines */}
+                        {[0.25, 0.5, 0.75, 1].map((lvl) => {
+                          const yPos = h - padY - lvl * (h - 2 * padY);
+                          return (
+                            <line
+                              key={lvl}
+                              x1={padX}
+                              y1={yPos}
+                              x2={w - padX}
+                              y2={yPos}
+                              stroke="#f1f5f9"
+                              strokeDasharray="4 4"
+                              strokeWidth="1"
+                            />
+                          );
+                        })}
+
+                        {/* Area Fill */}
+                        <path d={areaPath} fill="url(#areaGradient)" />
+
+                        {/* Total Line */}
+                        <path
+                          d={linePath}
+                          fill="none"
+                          stroke="#6366f1"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Approved Line */}
+                        <path
+                          d={appLinePath}
+                          fill="none"
+                          stroke="#10b981"
+                          strokeWidth="2"
+                          strokeDasharray="4 3"
+                          strokeLinecap="round"
+                        />
+
+                        {/* Interactive Data Points */}
+                        {points.map((p: any, idx: number) => (
+                          <g key={idx} className="cursor-pointer">
+                            <circle
+                              cx={p.x}
+                              cy={p.y}
+                              r={hoveredMonth?.month === p.month ? "6" : "4"}
+                              className="fill-white stroke-indigo-600 transition-all duration-150"
+                              strokeWidth="2.5"
+                              onMouseEnter={() => setHoveredMonth(p)}
+                              onMouseLeave={() => setHoveredMonth(null)}
+                            />
+                          </g>
+                        ))}
+                      </svg>
+
+                      {/* X-Axis Month Labels */}
+                      <div className="flex justify-between px-6 mt-1 text-[11px] font-semibold text-slate-400">
+                        {months.map((m: any, idx: number) => (
+                          <span
+                            key={idx}
+                            className={hoveredMonth?.month === m.month ? "text-indigo-600 font-bold" : ""}
+                          >
+                            {m.month}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Hover Tooltip Overlay */}
+                      {hoveredMonth && (
+                        <div
+                          className="absolute -top-12 z-20 bg-slate-900 text-white px-3 py-1.5 rounded-xl text-xs shadow-xl pointer-events-none transform -translate-x-1/2 transition-all animate-fade-in"
+                          style={{
+                            left: `${(points.find((p: any) => p.month === hoveredMonth.month)?.x / w) * 100}%`,
+                          }}
+                        >
+                          <div className="font-bold text-[11px] text-indigo-300">
+                            {hoveredMonth.month} {hoveredMonth.year}
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] mt-0.5">
+                            <span>Total: <strong className="text-white">{hoveredMonth.total}</strong></span>
+                            <span>Disetujui: <strong className="text-emerald-400">{hoveredMonth.approved}</strong></span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              )}
+            </div>
+          </div>
+
+          {/* Chart 2: Status Distribution Donut (5 Cols) */}
+          <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div className="mb-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <PieChart className="w-4 h-4 text-indigo-600" />
+                Rasio Status Peminjaman
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Komposisi pengajuan berdasarkan status akhir.
+              </p>
+            </div>
+
+            {/* Donut Chart & Legend */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 my-auto pt-2">
+              {/* SVG Donut */}
+              <div className="relative w-36 h-36 flex-shrink-0">
+                {(() => {
+                  const items = analytics?.statusDistribution || [];
+                  const totalAll = items.reduce((sum: number, it: any) => sum + it.count, 0) || 1;
+                  const radius = 50;
+                  const circumference = 2 * Math.PI * radius;
+                  let accumulatedOffset = 0;
+
+                  return (
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                      {/* Background track */}
+                      <circle
+                        cx="60"
+                        cy="60"
+                        r={radius}
+                        fill="transparent"
+                        stroke="#f1f5f9"
+                        strokeWidth="16"
+                      />
+
+                      {/* Segments */}
+                      {items.map((slice: any, idx: number) => {
+                        const sliceLength = (slice.count / totalAll) * circumference;
+                        const dashArray = `${sliceLength} ${circumference - sliceLength}`;
+                        const dashOffset = -accumulatedOffset;
+                        accumulatedOffset += sliceLength;
+
+                        if (slice.count === 0) return null;
+
+                        return (
+                          <circle
+                            key={idx}
+                            cx="60"
+                            cy="60"
+                            r={radius}
+                            fill="transparent"
+                            stroke={slice.color}
+                            strokeWidth="16"
+                            strokeDasharray={dashArray}
+                            strokeDashoffset={dashOffset}
+                            className="transition-all duration-500 hover:opacity-80"
+                          />
+                        );
+                      })}
+                    </svg>
+                  );
+                })()}
+
+                {/* Donut Center Count */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xl font-extrabold text-slate-900 leading-none">
+                    {stats?.totalBookings ?? 0}
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                    Pengajuan
+                  </span>
+                </div>
+              </div>
+
+              {/* Legend List */}
+              <div className="flex-1 w-full space-y-2 text-xs">
+                {(analytics?.statusDistribution || []).map((item: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-slate-50 transition">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-slate-700 font-medium truncate text-xs">{item.label}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className="font-bold text-slate-900 text-xs">{item.count}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">({item.percentage}%)</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Popular Rooms Ranking (Horizontal Bar Progress) */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-indigo-600" />
+                Ruangan Terpopuler & Paling Sering Digunakan
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Peringkat frekuensi pemakaian ruang kuliah dan laboratorium kampus.
+              </p>
+            </div>
+            <Link
+              href="/admin/ruangan"
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+            >
+              Kelola Ruangan <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="space-y-3.5">
+            {(analytics?.popularRooms || []).map((room: any, idx: number) => {
+              const rankColors = [
+                "bg-amber-400 text-amber-950 font-bold",
+                "bg-slate-300 text-slate-800 font-bold",
+                "bg-amber-700/70 text-white font-bold",
+                "bg-slate-100 text-slate-600",
+                "bg-slate-100 text-slate-600",
+              ];
+
+              return (
+                <div key={room.id || idx} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${rankColors[idx] || "bg-slate-100"}`}>
+                        {idx + 1}
+                      </span>
+                      <span className="font-bold text-slate-800 truncate">{room.name}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
+                        {room.code}
+                      </span>
+                      <span className="text-[11px] text-slate-400 hidden sm:inline">
+                        &bull; {room.location}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="font-bold text-indigo-700 text-xs">{room.count}x Dipinjam</span>
+                    </div>
+                  </div>
+
+                  {/* Visual Progress Bar */}
+                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-700"
+                      style={{ width: `${Math.max(8, Math.min(100, (room.count / Math.max(1, analytics?.popularRooms?.[0]?.count || 1)) * 100))}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
